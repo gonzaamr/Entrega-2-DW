@@ -43,7 +43,11 @@ app.post('/login', (req, res) => {
   const { username, password } = req.body
   const usuario = usuarios.find(u => u.username === username && u.password === password)
   if (!usuario) return res.send('Credenciales inválidas. <a href="/login">Intentar de nuevo</a>')
-  res.render('pp', { username })
+  res.redirect(`/pp?username=${encodeURIComponent(username)}`);
+})
+
+app.get('/pp', (req, res) => {
+  res.render('pp')
 })
 
 // Ruta raíz
