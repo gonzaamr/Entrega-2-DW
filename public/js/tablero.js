@@ -1,36 +1,43 @@
 const p = [
-    { icono: "♜", fila: 0, col: 0, color: "blanca" }, { icono: "♞", fila: 0, col: 1, color: "blanca" },
-    { icono: "♝", fila: 0, col: 2, color: "blanca" }, { icono: "♛", fila: 0, col: 3, color: "blanca" },
-    { icono: "♚", fila: 0, col: 4, color: "blanca" }, { icono: "♝", fila: 0, col: 5, color: "blanca" },
-    { icono: "♞", fila: 0, col: 6, color: "blanca" }, { icono: "♜", fila: 0, col: 7, color: "blanca" },
-    { icono: "♟", fila: 1, col: 0, color: "blanca" }, { icono: "♟", fila: 1, col: 1, color: "blanca" },
-    { icono: "♟", fila: 1, col: 2, color: "blanca" }, { icono: "♟", fila: 1, col: 3, color: "blanca" },
-    { icono: "♟", fila: 1, col: 4, color: "blanca" }, { icono: "♟", fila: 1, col: 5, color: "blanca" },
-    { icono: "♟", fila: 1, col: 6, color: "blanca" }, { icono: "♟", fila: 1, col: 7, color: "blanca" },
+  { icono: "♜", fila: 0, col: 0, color: "blanca" }, { icono: "♞", fila: 0, col: 1, color: "blanca" },
+  { icono: "♝", fila: 0, col: 2, color: "blanca" }, { icono: "♛", fila: 0, col: 3, color: "blanca" },
+  { icono: "♚", fila: 0, col: 4, color: "blanca" }, { icono: "♝", fila: 0, col: 5, color: "blanca" },
+  { icono: "♞", fila: 0, col: 6, color: "blanca" }, { icono: "♜", fila: 0, col: 7, color: "blanca" },
+  { icono: "♟", fila: 1, col: 0, color: "blanca" }, { icono: "♟", fila: 1, col: 1, color: "blanca" },
+  { icono: "♟", fila: 1, col: 2, color: "blanca" }, { icono: "♟", fila: 1, col: 3, color: "blanca" },
+  { icono: "♟", fila: 1, col: 4, color: "blanca" }, { icono: "♟", fila: 1, col: 5, color: "blanca" },
+  { icono: "♟", fila: 1, col: 6, color: "blanca" }, { icono: "♟", fila: 1, col: 7, color: "blanca" },
 
-    { icono: "♜", fila: 7, col: 0, color: "negra" }, { icono: "♞", fila: 7, col: 1, color: "negra"  },
-    { icono: "♝", fila: 7, col: 2, color: "negra" }, { icono: "♛", fila: 7, col: 3, color: "negra"  },
-    { icono: "♚", fila: 7, col: 4, color: "negra"  }, { icono: "♝", fila: 7, col: 5, color: "negra" },
-    { icono: "♞", fila: 7, col: 6, color: "negra"  }, { icono: "♜", fila: 7, col: 7, color: "negra"  },
-    { icono: "♟", fila: 6, col: 0, color: "negra"  }, { icono: "♟", fila: 6, col: 1, color: "negra"  },
-    { icono: "♟", fila: 6, col: 2, color: "negra"  }, { icono: "♟", fila: 6, col: 3, color: "negra"  },
-    { icono: "♟", fila: 6, col: 4, color: "negra"  }, { icono: "♟", fila: 6, col: 5, color: "negra"  },
-    { icono: "♟", fila: 6, col: 6, color: "negra"  }, { icono: "♟", fila: 6, col: 7, color: "negra"  }
-  ];
+  { icono: "♜", fila: 7, col: 0, color: "negra" }, { icono: "♞", fila: 7, col: 1, color: "negra" },
+  { icono: "♝", fila: 7, col: 2, color: "negra" }, { icono: "♛", fila: 7, col: 3, color: "negra" },
+  { icono: "♚", fila: 7, col: 4, color: "negra" }, { icono: "♝", fila: 7, col: 5, color: "negra" },
+  { icono: "♞", fila: 7, col: 6, color: "negra" }, { icono: "♜", fila: 7, col: 7, color: "negra" },
+  { icono: "♟", fila: 6, col: 0, color: "negra" }, { icono: "♟", fila: 6, col: 1, color: "negra" },
+  { icono: "♟", fila: 6, col: 2, color: "negra" }, { icono: "♟", fila: 6, col: 3, color: "negra" },
+  { icono: "♟", fila: 6, col: 4, color: "negra" }, { icono: "♟", fila: 6, col: 5, color: "negra" },
+  { icono: "♟", fila: 6, col: 6, color: "negra" }, { icono: "♟", fila: 6, col: 7, color: "negra" }
+];
 
-  const piezasIniciales = p;
-  const movimientos = [];
-  const tablero = document.getElementById("tablero");
+const piezasIniciales = p;
+const m = [];
+const movimientos = m;
+const tablero = document.getElementById("tablero");
 
-  function guardar() {
+// Cargar estado guardado desde localStorage
+const estadoGuardado = localStorage.getItem("estadoAjedrez");
+const piezasDesdeLocalStorage = estadoGuardado ? JSON.parse(estadoGuardado) : piezasIniciales;
+
+const estadoMovimientos = localStorage.getItem("estadoMovimientos");
+movimientos.push(...(estadoMovimientos ? JSON.parse(estadoMovimientos) : []));
+
+function guardar() {
   const piezas = [];
   const casillas = document.querySelectorAll(".casilla");
-
   casillas.forEach(casilla => {
     const pieza = casilla.querySelector(".pieza");
-    if (pieza) {  
+    if (pieza) {
       const color = getComputedStyle(pieza).color;
-      const tipo = color === 'rgb(255, 255, 255)' ? 'blanca':'negra';
+      const tipo = color === 'rgb(255, 255, 255)' ? 'blanca' : 'negra';
       const [_, fila, col] = casilla.id.split("-");
       piezas.push({
         icono: pieza.textContent,
@@ -40,71 +47,95 @@ const p = [
       });
     }
   });
-
   localStorage.setItem("estadoAjedrez", JSON.stringify(piezas));
-  }
+}
+
+// Crear las casillas y las piezas
+for (let fila = 0; fila < 8; fila++) {
+  for (let col = 0; col < 8; col++) {
+    const casilla = document.createElement("div");
+    casilla.classList.add("casilla");
+    casilla.classList.add((fila + col) % 2 === 0 ? "claro" : "oscuro");
+    casilla.id = `casilla-${fila}-${col}`;
+
+    casilla.addEventListener("dragover", e => {
+      e.preventDefault();
+      casilla.style.transform = "scale(1.2)";
+    });
+
+    casilla.addEventListener("dragleave", () => {
+      casilla.style.transform = "scale(1)";
+    });
+
+    casilla.addEventListener("drop", e => {
+      e.preventDefault();
+      const piezaId = e.dataTransfer.getData("text/plain");
+      const casillaOrigenId = e.dataTransfer.getData("origen");
+      const casillaDestinoId = e.currentTarget.id;
+      const pieza = document.getElementById(piezaId);
+      const colorCSS = getComputedStyle(pieza).color;
 
 
-
-  for (let fila = 0; fila < 8; fila++) { //Para recorrer filas 
-    for (let col = 0; col < 8; col++) {  //Para recorrer columnas
-
-      const casilla = document.createElement("div");  //Crea un div en el DOM(HTML)
-      casilla.classList.add("casilla"); // Al div le añade class="casilla"
-      casilla.classList.add((fila + col) % 2 === 0 ? "claro" : "oscuro"); //Si el modulo en 2 de fila+col es 0 la clase del div conteniido en casilla será class="casilla claro"
-      casilla.id = `casilla-${fila}-${col}`; //Crea un id="casilla-fil-col" al DOM contenido en casilla
-      // <div class="casilla claro/oscuro" id="casilla-fila-col"></div>
-
-      casilla.addEventListener("dragover", e => {
-        e.preventDefault();
-        casilla.style.transform="scale(1.2)";
-      }); // Se agrega una evento escuchador a casilla, que si suscede un dragvoer, se ejecuta la funcion con parametro e, la cual es e.preventdefault(). la cual dice 'no actues como lo haces normalmente' al DOM
-
-      casilla.addEventListener("dragleave", () => {
-        casilla.style.transform = "scale(1)";
-      });
-
-      casilla.addEventListener("drop", e => { //Añade un escuchador de eventoos a casilla para drops
-        e.preventDefault(); //Le dice al objeto que no actue segun default
-        const piezaId = e.dataTransfer.getData("text/plain"); //Crea una variable y le almacena el id del objeto arrastrado
-        const casillaOrigenId = e.dataTransfer.getData("origen");
-        console.log(piezaId);
-        const pieza = document.getElementById(piezaId); //Crea una variable con el objeto segun su id
-        e.currentTarget.children.length === 0 ? e.currentTarget.appendChild(pieza) : console.log('Ya hay una pieza aqui'); //Verififca que no haya anda en el objetivo yy si no hay deja la pieza ahi
-        const casillaDestinoId = e.currentTarget.id;
+      if (e.currentTarget.children.length === 0) {
+        e.currentTarget.appendChild(pieza);
         const [_, filaOrigen, colOrigen] = casillaOrigenId.split("-");
         const [__, filaDestino, colDestino] = casillaDestinoId.split("-");
-        movimientos.push({
-          origen: `${parseInt(filaOrigen)}-${parseInt(colOrigen)}`,
-          destino: `${parseInt(filaDestino)}-${parseInt(colDestino)}`
-        });
-        console.log(movimientos);
-        casilla.style.transform = "scale(1)";
+        if (casillaOrigenId !== casillaDestinoId) {
+          const mov = {
+            origen: `${parseInt(filaOrigen)}-${parseInt(colOrigen)}`,
+            destino: `${parseInt(filaDestino)}-${parseInt(colDestino)}`,
+            color: colorCSS === 'rgb(255, 255, 255)' ? 'blanca' : 'negra'
+          };
+
+          movimientos.push(mov);
+          localStorage.setItem("estadoMovimientos", JSON.stringify(movimientos));
+
+          const nuevoMovimiento = document.createElement("li");
+          nuevoMovimiento.textContent = `${mov.origen} → ${mov.destino}`;
+          nuevoMovimiento.style.color = mov.color === "blanca" ? "white" : "black";
+          move.appendChild(nuevoMovimiento);
+
+          console.log(movimientos);
+        }
+
+        
         guardar();
+
+      } else {
+        console.log("Ya hay una pieza aquí");
+      }
+      casilla.style.transform = "scale(1)";
+      
+      
+    });
+
+    const piezaData = piezasDesdeLocalStorage.find(p => p.fila === fila && p.col === col);
+
+    if (piezaData) {
+      const pieza = document.createElement("div");
+      pieza.textContent = piezaData.icono;
+      pieza.classList.add("pieza");
+      pieza.setAttribute("draggable", "true");
+      pieza.id = `pieza-${fila}-${col}`;
+      pieza.style.color = piezaData.color === "blanca" ? "white" : "black";
+
+      pieza.addEventListener("dragstart", e => {
+        e.dataTransfer.setData("text/plain", e.target.id);
+        e.dataTransfer.setData("origen", e.target.parentElement.id);
       });
 
-      const estadoGuardado = localStorage.getItem("estadoAjedrez");
-      const piezasIniciales = estadoGuardado ? JSON.parse(estadoGuardado) : p;
-
-  
-      //<div class="casilla claro/oscuro" id="casilla-fila-col"></div>
-      var piezaData = piezasIniciales.find(p => p.fila === fila && p.col === col); //Busca en el  arreglo piezasIniciales cierta pieza de una fila y columna 
-
-      if (piezaData) { //Si es que hay una pieza en esa fila y columna
-        var pieza = document.createElement("div"); //Crea un div
-        pieza.textContent = piezaData.icono; //Hace que el atributo icono de piezaData sea el contenido visible del dom almacenado en pieza
-        pieza.classList.add("pieza");//Le agrega una clase al DOM
-        pieza.setAttribute("draggable", "true");//Convierte el elemento HTML en uno arrastrable
-        pieza.id = `pieza-${fila}-${col}`; //Define el id del dom
-        
-        piezaData.color === "blanca" ? pieza.style.color = "white" : pieza.style.color = "black";//Define el color de la pieza
-    
-        pieza.addEventListener("dragstart", e => { //Agrega un evento de escucha a la una pieza cuando empieza el arrastre
-          e.dataTransfer.setData("text/plain", e.target.id);// Define los datos de los objetos(La pieza que fue objetivo del dragstart) que gatillaron el evento, en texto plano
-          e.dataTransfer.setData("origen", e.target.parentElement.id);
-        }); 
-          casilla.appendChild(pieza);//Coloca la pieza en la casilla
-      }
-      tablero.appendChild(casilla);//Coloca la casilla en el tablero
+      casilla.appendChild(pieza);
     }
+
+    tablero.appendChild(casilla);
   }
+}
+
+const move = document.getElementById("m")
+
+movimientos.forEach(mov =>{
+  const a = document.createElement("li");
+  a.textContent = `${mov.origen} → ${mov.destino}`;
+  move.appendChild(a);
+});
+

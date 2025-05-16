@@ -1,34 +1,38 @@
 <body>
+  <a id="v" href="pp">⬅ Volver</a>
   <div class="contenido-ajedrez">
+    <div class="player1">  
+      <div class="cuadro">
+        <div class="foto_partida">foto</div>
+        <div class="nombre_partida">Piezas blancas</div>
+      </div>
+      <section class="movimientos">
+          <h3>Movimientos</h3>
+            <ul id="m">
+            </ul>
+      </section> 
+    </div>
     <main>
-      <a href="pp">⬅ Volver</a>
       <h1>Partida en curso</h1>
-      
      <div class="tablero" id="tablero"></div>
-
       <div class="info-partida">
         <p class="turno"><strong>Turno de:</strong> Jugador</p>
-        
         <div class="acciones">
             <button>Rendirse</button>
             <button>Empatar</button>
         </div>
-
-        <section class="movimientos">
-          <h3>Movimientos</h3>
-          <ul>
-            <li>e2 a e4</li>
-          </ul>
-        </section> 
-
-        <section class="invitar">
-          <h3>Invitar jugador</h3>
-          <div class="invitar-form">
-            <input type="email" placeholder="Correo del oponente">
-            <button>Invitar</button>
-          </div>
-        </section>
       </div>
     </main>
+    <div class="player2">
+      <div class="cuadro">
+        <div class="foto_partida">foto</div>
+        <div class="nombre_partida">Piezas negras</div>
+      </div>
+      <section class="movimientos">
+          <h3>Movimientos</h3>
+            <ul id="m">
+            </ul>
+      </section> 
+    </div>
   </div>
 </body>
