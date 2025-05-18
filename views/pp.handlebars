@@ -13,7 +13,7 @@
                 <span class="box-container"> <!-- Contenedor adicional -->
                     <span class="box">
                         <img src="/images/peon.png" class="item" alt="Nueva partida">
-                        <span>Nueva partida</span>
+                        <span>Jugar</span>
                     </span>  
                 </span>
             </label>
@@ -58,9 +58,9 @@
         </div> 
         <div class="contenedor_pp detalle partida">
             <label class="boton volver" for="inicio">⬅ Volver</label>
-            <h1>Nueva partida</h1>
+            <h1>Partida</h1>
             <img src="/images/peon.png" class="itemdetalle" alt="Iniciar">
-            <a href="/partida" class="iniciar">Iniciar</a>
+            <a href="/partida" class="iniciar">Iniciar nueva partida</a>
         </div>
         <div class="contenedor_pp detalle curso">
             <label class="boton volver" for="inicio">⬅ Volver</label>
@@ -204,4 +204,13 @@
                 </div>  
             </div>
         </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const botonPartida = document.querySelector(".iniciar");
+
+                if (localStorage.getItem("estadoAjedrez")) {
+                    botonPartida.textContent = "Seguir jugando";
+                }
+            });
+        </script>
     </body>

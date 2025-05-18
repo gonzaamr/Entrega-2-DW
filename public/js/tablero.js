@@ -21,6 +21,8 @@ const p = [
 const piezasIniciales = p;
 const m = [];
 const movimientos = m;
+
+
 const tablero = document.getElementById("tablero");
 
 // Cargar estado guardado desde localStorage
@@ -29,6 +31,10 @@ const piezasDesdeLocalStorage = estadoGuardado ? JSON.parse(estadoGuardado) : pi
 
 const estadoMovimientos = localStorage.getItem("estadoMovimientos");
 movimientos.push(...(estadoMovimientos ? JSON.parse(estadoMovimientos) : []));
+
+
+
+
 
 function guardar() {
   const piezas = [];
@@ -50,6 +56,48 @@ function guardar() {
   localStorage.setItem("estadoAjedrez", JSON.stringify(piezas));
 }
 
+const move1 = document.getElementById("m1");
+const move2 = document.getElementById("m2");
+
+
+function agregarMovimientoAlHistorial(mov) { //funcion para registrar movimieentos
+  const li = document.createElement("li");
+  li.textContent = `${mov.origen} → ${mov.destino}`;
+  if(mov.color === "blanca"){
+    move1.insertBefore(li, move1.firstChild);
+    li.style.color = "white";
+    li.style.background=" rgba(0, 0, 0, 0.6)";
+  }
+  else{
+    move2.insertBefore(li, move2.firstChild);
+    li.style.color = "black";
+    li.style.background="rgba(255, 255, 255, 0.6)";
+  };
+};
+
+function turno() {
+  if (movimientos.length === 0) return "blanca"; // Primer turno
+  const ultimo = movimientos.at(-1);
+  return ultimo.color === "blanca" ? "negra" : "blanca";
+}
+
+function actualizarTurnoVisual() {
+  const turnoActual = turno();
+  const playerSpan = document.querySelector(".player");
+  const cuadroBlancas = document.querySelector(".c1");
+  const cuadroNegras = document.querySelector(".c2");
+
+  playerSpan.textContent = turnoActual;
+
+  if (turnoActual === "blanca") {
+    cuadroBlancas.classList.add("activo");
+    cuadroNegras.classList.remove("activo");
+  } else {
+    cuadroBlancas.classList.remove("activo");
+    cuadroNegras.classList.add("activo");
+  }
+}
+
 // Crear las casillas y las piezas
 for (let fila = 0; fila < 8; fila++) {
   for (let col = 0; col < 8; col++) {
@@ -59,7 +107,7 @@ for (let fila = 0; fila < 8; fila++) {
     casilla.id = `casilla-${fila}-${col}`;
 
     casilla.addEventListener("dragover", e => {
-      e.preventDefault();
+  e.preventDefault();
       casilla.style.transform = "scale(1.2)";
     });
 
@@ -74,8 +122,16 @@ for (let fila = 0; fila < 8; fila++) {
       const casillaDestinoId = e.currentTarget.id;
       const pieza = document.getElementById(piezaId);
       const colorCSS = getComputedStyle(pieza).color;
+      const colorPieza = colorCSS === 'rgb(255, 255, 255)' ? 'blanca' : 'negra';
 
-
+      const turnoActual = turno();
+      if (colorPieza !== turnoActual) {
+        alert(`¡Es turno de las ${turnoActual}s!`);
+        casilla.style.transform = "scale(1)";
+        return; 
+      }
+      
+      
       if (e.currentTarget.children.length === 0) {
         e.currentTarget.appendChild(pieza);
         const [_, filaOrigen, colOrigen] = casillaOrigenId.split("-");
@@ -84,29 +140,29 @@ for (let fila = 0; fila < 8; fila++) {
           const mov = {
             origen: `${parseInt(filaOrigen)}-${parseInt(colOrigen)}`,
             destino: `${parseInt(filaDestino)}-${parseInt(colDestino)}`,
-            color: colorCSS === 'rgb(255, 255, 255)' ? 'blanca' : 'negra'
+            color: colorPieza
           };
 
           movimientos.push(mov);
           localStorage.setItem("estadoMovimientos", JSON.stringify(movimientos));
 
-          const nuevoMovimiento = document.createElement("li");
-          nuevoMovimiento.textContent = `${mov.origen} → ${mov.destino}`;
-          nuevoMovimiento.style.color = mov.color === "blanca" ? "white" : "black";
-          move.appendChild(nuevoMovimiento);
+          agregarMovimientoAlHistorial(mov);
+          
+          const turnoDe = document.querySelector(".player");
+          const nombre = turnoActual === 'blanca' ?  'negra': 'blanca';
+          turnoDe.textContent = nombre;
+          actualizarTurnoVisual();
 
+
+    
           console.log(movimientos);
         }
-
-        
         guardar();
 
       } else {
         console.log("Ya hay una pieza aquí");
       }
       casilla.style.transform = "scale(1)";
-      
-      
     });
 
     const piezaData = piezasDesdeLocalStorage.find(p => p.fila === fila && p.col === col);
@@ -131,11 +187,42 @@ for (let fila = 0; fila < 8; fila++) {
   }
 }
 
-const move = document.getElementById("m")
+movimientos.forEach(agregarMovimientoAlHistorial);
+actualizarTurnoVisual(); // ← Aquí
+// 
 
-movimientos.forEach(mov =>{
-  const a = document.createElement("li");
-  a.textContent = `${mov.origen} → ${mov.destino}`;
-  move.appendChild(a);
+
+
+
+const rendirse = document.getElementById("rendirse")
+
+rendirse.addEventListener("click", () => {
+  const seguro = confirm("¿Estás segur@ de querer rendirte?");
+  
+  if (seguro) {
+    const jugador = turno(); 
+    if (jugador === "negra") {
+      alert("Ganador: Piezas blancas");
+    } else {
+      alert("Ganador: Piezas negras");
+    }
+    localStorage.removeItem("estadoAjedrez");
+    localStorage.removeItem("estadoMovimientos");
+    location.href = "/pp";
+  }
+});
+
+
+const empatar = document.getElementById("empatar")
+empatar.addEventListener("click", () => {
+  const seguro = confirm("¿Están seguros de querer empatar?");
+  if (seguro) {
+    alert("Empate");
+    localStorage.removeItem("estadoAjedrez");
+    localStorage.removeItem("estadoMovimientos");
+    location.href = "/pp";
+
+
+  }
 });
 
