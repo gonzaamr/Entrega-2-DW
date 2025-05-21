@@ -21,20 +21,11 @@ const p = [
 const piezasIniciales = p;
 const m = [];
 const movimientos = m;
-
-
 const tablero = document.getElementById("tablero");
-
-// Cargar estado guardado desde localStorage
-const estadoGuardado = localStorage.getItem("estadoAjedrez");
+const estadoGuardado = localStorage.getItem("estadoAjedrez");// Cargar estado guardado desde localStorage
 const piezasDesdeLocalStorage = estadoGuardado ? JSON.parse(estadoGuardado) : piezasIniciales;
-
 const estadoMovimientos = localStorage.getItem("estadoMovimientos");
 movimientos.push(...(estadoMovimientos ? JSON.parse(estadoMovimientos) : []));
-
-
-
-
 
 function guardar() {
   const piezas = [];
@@ -58,7 +49,6 @@ function guardar() {
 
 const move1 = document.getElementById("m1");
 const move2 = document.getElementById("m2");
-
 
 function agregarMovimientoAlHistorial(mov) { //funcion para registrar movimieentos
   const li = document.createElement("li");
@@ -98,6 +88,205 @@ function actualizarTurnoVisual() {
   }
 }
 
+// ===================== VALIDACIÓN DE MOVIMIENTOS (AGREGADO) =====================
+
+// Devuelve la pieza DOM en una casilla, o null si está vacía
+function piezaEn(fila, col) {
+  return document.querySelector(`#casilla-${fila}-${col} .pieza`);
+}
+
+// Devuelve el color de la pieza en una casilla (o null si no hay pieza)
+function colorPiezaEn(fila, col) {
+  const pieza = piezaEn(fila, col);
+  if (!pieza) return null;
+  const color = getComputedStyle(pieza).color;
+  return color === 'rgb(255, 255, 255)' ? 'blanca' : 'negra';
+}
+
+// Valida movimiento de peón
+function validarPeon(pieza, filaO, colO, filaD, colD) {
+  const dir = pieza.color === "blanca" ? 1 : -1;
+  const filaInicio = pieza.color === "blanca" ? 1 : 6;
+  // Movimiento simple adelante
+  if (colO === colD && filaD - filaO === dir && !piezaEn(filaD, colD)) return true;
+  // Primer movimiento dos adelante
+  if (
+    colO === colD &&
+    filaO === filaInicio &&
+    filaD - filaO === 2 * dir &&
+    !piezaEn(filaO + dir, colO) &&
+    !piezaEn(filaD, colD)
+  ) return true;
+  // Captura diagonal
+  if (
+    Math.abs(colD - colO) === 1 &&
+    filaD - filaO === dir &&
+    piezaEn(filaD, colD) &&
+    colorPiezaEn(filaD, colD) !== pieza.color
+  ) return true;
+  return false;
+}
+
+// Valida movimiento de torre
+function validarTorre(pieza, filaO, colO, filaD, colD) {
+  if (filaO !== filaD && colO !== colD) return false;
+  // Verifica camino libre
+  if (filaO === filaD) {
+    const min = Math.min(colO, colD) + 1, max = Math.max(colO, colD);
+    for (let c = min; c < max; c++) if (piezaEn(filaO, c)) return false;
+  } else {
+    const min = Math.min(filaO, filaD) + 1, max = Math.max(filaO, filaD);
+    for (let f = min; f < max; f++) if (piezaEn(f, colO)) return false;
+  }
+  // No captura pieza del mismo color
+  if (piezaEn(filaD, colD) && colorPiezaEn(filaD, colD) === pieza.color) return false;
+  return true;
+}
+
+// Valida movimiento de caballo
+function validarCaballo(pieza, filaO, colO, filaD, colD) {
+  const dx = Math.abs(filaO - filaD);
+  const dy = Math.abs(colO - colD);
+  // L
+  if (!((dx === 2 && dy === 1) || (dx === 1 && dy === 2))) return false;
+  // No captura pieza del mismo color
+  if (piezaEn(filaD, colD) && colorPiezaEn(filaD, colD) === pieza.color) return false;
+  return true;
+}
+
+// Valida movimiento de alfil
+function validarAlfil(pieza, filaO, colO, filaD, colD) {
+  const dx = Math.abs(filaO - filaD);
+  const dy = Math.abs(colO - colD);
+  if (dx !== dy) return false;
+  // Verifica camino libre
+  const stepX = filaD > filaO ? 1 : -1;
+  const stepY = colD > colO ? 1 : -1;
+  let f = filaO + stepX, c = colO + stepY;
+  while (f !== filaD && c !== colD) {
+    if (piezaEn(f, c)) return false;
+    f += stepX; c += stepY;
+  }
+  // No captura pieza del mismo color
+  if (piezaEn(filaD, colD) && colorPiezaEn(filaD, colD) === pieza.color) return false;
+  return true;
+}
+
+// Valida movimiento de dama
+function validarDama(pieza, filaO, colO, filaD, colD) {
+  // Combina torre y alfil
+  return validarTorre(pieza, filaO, colO, filaD, colD) || validarAlfil(pieza, filaO, colO, filaD, colD);
+}
+
+// Valida movimiento de rey
+function validarRey(pieza, filaO, colO, filaD, colD) {
+  const dx = Math.abs(filaO - filaD);
+  const dy = Math.abs(colO - colD);
+  if (dx <= 1 && dy <= 1) {
+    // No captura pieza del mismo color
+    if (piezaEn(filaD, colD) && colorPiezaEn(filaD, colD) === pieza.color) return false;
+    return true;
+  }
+  return false;
+}
+
+// Función general de validación (llama a la función según el tipo de pieza)
+function esMovimientoValido(pieza, filaO, colO, filaD, colD) {
+  switch (pieza.icono) {
+    case "♟":
+      return validarPeon(pieza, filaO, colO, filaD, colD);
+    case "♜":
+      return validarTorre(pieza, filaO, colO, filaD, colD);
+    case "♞":
+      return validarCaballo(pieza, filaO, colO, filaD, colD);
+    case "♝":
+      return validarAlfil(pieza, filaO, colO, filaD, colD);
+    case "♚":
+      return validarDama(pieza, filaO, colO, filaD, colD);
+    case "♛":
+      return validarRey(pieza, filaO, colO, filaD, colD);
+    default:
+      return false;
+  }
+}
+// ===================== FIN VALIDACIÓN DE MOVIMIENTOS (AGREGADO) =====================
+
+// ==== AGREGADO: FUNCIÓN PARA BANDEJA DE CAPTURAS ====
+function agregarPiezaCapturada(icono, color, origenElemento) {
+  const bandeja = document.getElementById(color === "blanca" ? "bandeja-blancas" : "bandeja-negras");
+
+  // Clonar la pieza DOM
+  const clone = origenElemento.cloneNode(true);
+  clone.classList.add("pieza-capturada", color, "p-clone");
+  clone.style.position = "absolute";
+  clone.style.zIndex = "1000";
+  document.body.appendChild(clone);
+
+  // Obtener posición de origen (pieza en el tablero)
+  const rectFrom = origenElemento.getBoundingClientRect();
+  clone.style.top = `${rectFrom.top}px`;
+  clone.style.left = `${rectFrom.left}px`;
+  clone.style.width = `${rectFrom.width}px`;
+  clone.style.height = `${rectFrom.height}px`;
+
+  // Obtener posición de destino (bandeja)
+  const rectTo = bandeja.getBoundingClientRect();
+  const finalTop = rectTo.top + bandeja.offsetHeight / 2 - rectFrom.height / 2;
+  const finalLeft = rectTo.left + bandeja.offsetWidth / 2 - rectFrom.width / 2;
+
+  // Forzar un reflow y animar
+  requestAnimationFrame(() => {
+    clone.style.transition = "all 0.5s ease";
+    clone.style.top = `${finalTop}px`;
+    clone.style.left = `${finalLeft}px`;
+    clone.style.transform = "scale(0.7)";
+    clone.style.opacity = "0.5";
+  });
+
+  // Al final de la animación, agregar a la bandeja real y quitar el clon
+  setTimeout(() => {
+    const pieza = document.createElement("span");
+    pieza.textContent = icono;
+    pieza.classList.add("pieza-capturada", color, "visible");
+    bandeja.appendChild(pieza);
+    document.body.removeChild(clone);
+    guardarBandejas();
+  }, 500);
+}
+
+
+function guardarBandejas() {
+  const capturadasBlancas = Array.from(document.querySelectorAll('#bandeja-blancas .pieza-capturada')).map(p => p.textContent);
+  const capturadasNegras = Array.from(document.querySelectorAll('#bandeja-negras .pieza-capturada')).map(p => p.textContent);
+  localStorage.setItem('capturadasBlancas', JSON.stringify(capturadasBlancas));
+  localStorage.setItem('capturadasNegras', JSON.stringify(capturadasNegras));
+}
+
+function cargarBandejas() {
+  const capturadasBlancas = JSON.parse(localStorage.getItem('capturadasBlancas')) || [];
+  const capturadasNegras = JSON.parse(localStorage.getItem('capturadasNegras')) || [];
+
+  const bandejaBlancas = document.getElementById('bandeja-blancas');
+  const bandejaNegras = document.getElementById('bandeja-negras');
+
+  bandejaBlancas.innerHTML = '';
+  bandejaNegras.innerHTML = '';
+
+  capturadasBlancas.forEach(icono => {
+    // Llama a la función de agregar pero **no guardes aquí para evitar bucle infinito**
+    const pieza = document.createElement("span");
+    pieza.textContent = icono;
+    pieza.classList.add("pieza-capturada", "blanca", "visible");
+    bandejaBlancas.appendChild(pieza);
+  });
+  capturadasNegras.forEach(icono => {
+    const pieza = document.createElement("span");
+    pieza.textContent = icono;
+    pieza.classList.add("pieza-capturada", "negra", "visible");
+    bandejaNegras.appendChild(pieza);
+  });
+}
+
 // Crear las casillas y las piezas
 for (let fila = 0; fila < 8; fila++) {
   for (let col = 0; col < 8; col++) {
@@ -130,38 +319,60 @@ for (let fila = 0; fila < 8; fila++) {
         casilla.style.transform = "scale(1)";
         return; 
       }
-      
-      
-      if (e.currentTarget.children.length === 0) {
-        e.currentTarget.appendChild(pieza);
-        const [_, filaOrigen, colOrigen] = casillaOrigenId.split("-");
-        const [__, filaDestino, colDestino] = casillaDestinoId.split("-");
-        if (casillaOrigenId !== casillaDestinoId) {
-          const mov = {
-            origen: `${parseInt(filaOrigen)}-${parseInt(colOrigen)}`,
-            destino: `${parseInt(filaDestino)}-${parseInt(colDestino)}`,
-            color: colorPieza
-          };
-
-          movimientos.push(mov);
-          localStorage.setItem("estadoMovimientos", JSON.stringify(movimientos));
-
-          agregarMovimientoAlHistorial(mov);
           
-          const turnoDe = document.querySelector(".player");
-          const nombre = turnoActual === 'blanca' ?  'negra': 'blanca';
-          turnoDe.textContent = nombre;
-          actualizarTurnoVisual();
+    // ======= MODIFICADO: VALIDACIÓN DE MOVIMIENTOS =======
+    const [_, filaOrigen, colOrigen] = casillaOrigenId.split("-");
+    const [__, filaDestino, colDestino] = casillaDestinoId.split("-");
+    // Busca el objeto pieza (si se recargó, puede no estar en piezasDesdeLocalStorage, así que se construye)
+    const piezaObj = piezasDesdeLocalStorage.find(
+      p => p.fila == filaOrigen && p.col == colOrigen && p.icono == pieza.textContent
+    ) || { icono: pieza.textContent, color: colorPieza };
 
-
-    
-          console.log(movimientos);
+    // Llama a la validación:
+    if (!esMovimientoValido(piezaObj, Number(filaOrigen), Number(colOrigen), Number(filaDestino), Number(colDestino))) {
+      alert("Movimiento inválido");
+      casilla.style.transform = "scale(1)";
+      return;
+    }  
+   // Permite mover solo si la casilla destino está vacía
+   // Permite mover solo si la casilla destino está vacía o contiene una pieza (para capturas)
+    if (e.currentTarget.children.length === 0 ||(e.currentTarget.children.length === 1 && e.currentTarget.querySelector('.pieza'))){
+      // --- Captura rival, si existe
+      if (e.currentTarget.children.length === 1) {
+        const capturada = e.currentTarget.querySelector('.pieza');
+        if (capturada) {
+          const icono = capturada.textContent;
+          const colorCapturada = getComputedStyle(capturada).color === 'rgb(255, 255, 255)' ? "blanca" : "negra";
+          agregarPiezaCapturada(icono, colorCapturada, capturada);
+          capturada.remove(); // se elimina después de animar
         }
-        guardar();
-
-      } else {
-        console.log("Ya hay una pieza aquí");
       }
+      // --- Mueve tu pieza
+      e.currentTarget.appendChild(pieza);
+      // --- Guarda y registra movimiento
+      if (casillaOrigenId !== casillaDestinoId) {
+        const mov = {
+          origen: `${parseInt(filaOrigen)}-${parseInt(colOrigen)}`,
+          destino: `${parseInt(filaDestino)}-${parseInt(colDestino)}`,
+          color: colorPieza
+        };
+        movimientos.push(mov);
+        localStorage.setItem("estadoMovimientos", JSON.stringify(movimientos));
+        agregarMovimientoAlHistorial(mov);
+        const turnoDe = document.querySelector(".player");
+        const nombre = turnoActual === 'blanca' ? 'negra' : 'blanca';
+        turnoDe.textContent = nombre;
+        actualizarTurnoVisual();
+        console.log(movimientos);
+      }
+      guardar();
+    }
+    else{
+      // --- No se puede mover aquí, ya hay pieza (y no es una captura válida)
+      console.log("Ya hay una pieza aquí");
+    }
+// FIN bloque de movimiento
+    // ======= FIN MODIFICADO =======
       casilla.style.transform = "scale(1)";
     });
 
@@ -174,31 +385,26 @@ for (let fila = 0; fila < 8; fila++) {
       pieza.setAttribute("draggable", "true");
       pieza.id = `pieza-${fila}-${col}`;
       pieza.style.color = piezaData.color === "blanca" ? "white" : "black";
-
       pieza.addEventListener("dragstart", e => {
         e.dataTransfer.setData("text/plain", e.target.id);
         e.dataTransfer.setData("origen", e.target.parentElement.id);
       });
-
       casilla.appendChild(pieza);
     }
-
     tablero.appendChild(casilla);
   }
 }
-
 movimientos.forEach(agregarMovimientoAlHistorial);
 actualizarTurnoVisual(); // ← Aquí
 // 
 
-
-
-
 const rendirse = document.getElementById("rendirse")
+const empatar = document.getElementById("empatar")
+
+cargarBandejas();
 
 rendirse.addEventListener("click", () => {
   const seguro = confirm("¿Estás segur@ de querer rendirte?");
-  
   if (seguro) {
     const jugador = turno(); 
     if (jugador === "negra") {
@@ -206,23 +412,16 @@ rendirse.addEventListener("click", () => {
     } else {
       alert("Ganador: Piezas negras");
     }
-    localStorage.removeItem("estadoAjedrez");
-    localStorage.removeItem("estadoMovimientos");
+    localStorage.clear();
     location.href = "/pp";
   }
 });
 
-
-const empatar = document.getElementById("empatar")
 empatar.addEventListener("click", () => {
   const seguro = confirm("¿Están seguros de querer empatar?");
   if (seguro) {
     alert("Empate");
-    localStorage.removeItem("estadoAjedrez");
-    localStorage.removeItem("estadoMovimientos");
+    localStorage.clear();
     location.href = "/pp";
-
-
   }
 });
-
